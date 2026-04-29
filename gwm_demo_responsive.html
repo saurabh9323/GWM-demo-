@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GWM INC — Employee Operations Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#09090f;--bg2:#0d0d1a;--bg3:#111120;
+  --surface:#16162a;--surface2:#1c1c35;--surface3:#222244;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --gold:#f5c842;--gold2:#e8a200;--amber:#ff9500;
+  --cyan:#00d4ff;--green:#00e5a0;--red:#ff4d6a;--purple:#a855f7;
+  --text:#f0f0ff;--text2:rgba(240,240,255,0.6);--text3:rgba(240,240,255,0.3);
+  --r:12px;--r2:8px;--r3:20px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
+h1,h2,h3,.logo,.nav-label,.stat-value,.big-num{font-family:'Syne',sans-serif}
+
+/* ── LAYOUT ── */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:240px;min-width:240px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:56px;min-height:56px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;justify-content:space-between}
+.content{flex:1;overflow-y:auto;padding:24px;background:var(--bg)}
+
+/* ── SIDEBAR ── */
+.logo-row{padding:20px 20px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.logo-mark{width:36px;height:36px;background:var(--gold);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:var(--bg);font-family:'Syne',sans-serif}
+.logo{font-size:17px;font-weight:800;color:var(--text)}
+.logo span{color:var(--gold)}
+.nav-section{padding:16px 12px 8px;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-weight:600;font-family:'DM Sans',sans-serif}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;margin:1px 8px;border-radius:9px;cursor:pointer;transition:all .18s;font-size:13.5px;color:var(--text2);font-weight:500}
+.nav-item:hover{background:rgba(255,255,255,0.04);color:var(--text)}
+.nav-item.active{background:rgba(245,200,66,0.12);color:var(--gold)}
+.nav-item .icon{font-size:15px;width:20px;text-align:center}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px}
+.sidebar-footer{margin-top:auto;padding:16px;border-top:1px solid var(--border)}
+.user-row{display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;cursor:pointer}
+.user-row:hover{background:rgba(255,255,255,0.04)}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:#a855f7;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.user-name{font-size:13px;font-weight:600;color:var(--text)}
+.user-role{font-size:10px;color:var(--gold);font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+
+/* ── TOPBAR ── */
+.page-title{font-size:17px;font-weight:800;color:var(--text);font-family:'Syne',sans-serif}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.tb-btn{width:34px;height:34px;background:var(--surface);border:1px solid var(--border);border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:.15s;color:var(--text2);position:relative}
+.tb-btn:hover{background:var(--surface2);color:var(--text)}
+.tb-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;background:var(--red);border-radius:50%;border:1.5px solid var(--bg2)}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:0 12px;height:34px}
+.search-box input{background:none;border:none;outline:none;color:var(--text);font-size:13px;width:160px;font-family:'DM Sans',sans-serif}
+.search-box input::placeholder{color:var(--text3)}
+
+/* ── SCREEN ── */
+.screen{display:none}
+.screen.active{display:block}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.card-sm{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+
+/* ── STATS ── */
+.stat-card{background:var(--surface);border:1px solid;border-radius:var(--r);padding:18px;position:relative;overflow:hidden;cursor:pointer;transition:.18s}
+.stat-card:hover{transform:translateY(-2px)}
+.stat-icon{font-size:22px;margin-bottom:10px;opacity:.7}
+.stat-label{font-size:10px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;font-weight:600;margin-bottom:7px}
+.stat-value{font-size:30px;font-weight:800;margin-bottom:4px;font-family:'Syne',sans-serif}
+.stat-change{font-size:11px;color:var(--green)}
+.stat-change.neg{color:var(--red)}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;white-space:nowrap}
+.badge-green{background:rgba(0,229,160,.12);color:var(--green)}
+.badge-amber{background:rgba(255,149,0,.12);color:var(--amber)}
+.badge-red{background:rgba(255,77,106,.12);color:var(--red)}
+.badge-cyan{background:rgba(0,212,255,.12);color:var(--cyan)}
+.badge-purple{background:rgba(168,85,247,.15);color:var(--purple)}
+.badge-gold{background:rgba(245,200,66,.12);color:var(--gold)}
+
+/* ── TABLE ── */
+.table{width:100%;border-collapse:collapse}
+.table th{font-size:10px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;font-weight:600;padding:0 12px 10px;text-align:left;border-bottom:1px solid var(--border)}
+.table td{padding:12px;font-size:13.5px;color:var(--text2);border-bottom:1px solid var(--border)}
+.table tr:last-child td{border-bottom:none}
+.table tbody tr{cursor:pointer;transition:.12s}
+.table tbody tr:hover{background:rgba(255,255,255,0.025)}
+.table td.emp-name{color:var(--text);font-weight:600}
+
+/* ── AVATAR ── */
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0}
+
+/* ── BUTTONS ── */
+.btn-primary{background:var(--gold);color:var(--bg);border:none;border-radius:9px;padding:10px 20px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s}
+.btn-primary:hover{background:var(--gold2)}
+.btn-outline{background:none;color:var(--text2);border:1px solid var(--border2);border-radius:9px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s}
+.btn-outline:hover{background:rgba(255,255,255,.04);color:var(--text)}
+.btn-sm{padding:6px 14px;font-size:12px;border-radius:7px}
+
+/* ── SECTION TITLE ── */
+.sec-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;font-family:'Syne',sans-serif}
+.sec-sub{font-size:12px;color:var(--text3);margin-bottom:16px}
+
+/* ── SHIFT PILL ── */
+.pill-morning{background:rgba(245,200,66,.15);color:var(--gold);padding:3px 9px;border-radius:6px;font-size:10px;font-weight:700}
+.pill-evening{background:rgba(0,212,255,.12);color:var(--cyan);padding:3px 9px;border-radius:6px;font-size:10px;font-weight:700}
+.pill-night{background:rgba(168,85,247,.15);color:var(--purple);padding:3px 9px;border-radius:6px;font-size:10px;font-weight:700}
+
+/* ── DIVIDER ── */
+.hr{height:1px;background:var(--border);margin:14px 0}
+
+/* ── CHART BARS ── */
+.bar-chart{display:flex;align-items:flex-end;height:100px;gap:6px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+.bar-track{flex:1;width:100%;display:flex;align-items:flex-end;border-radius:3px}
+.bar-fill{width:100%;border-radius:3px 3px 0 0;transition:height .4s}
+.bar-label{font-size:10px;color:var(--text3)}
+
+/* ── HORIZ BAR ── */
+.hbar-track{height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;flex:1}
+.hbar-fill{height:100%;border-radius:3px;transition:width .5s}
+
+/* ── PROGRESS ── */
+.prog-track{height:3px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px}
+
+/* ── TIMELINE ── */
+.tl-item{display:flex;gap:14px;padding-bottom:18px}
+.tl-dot-col{display:flex;flex-direction:column;align-items:center;gap:0}
+.tl-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.tl-line{flex:1;width:1.5px;background:var(--border);margin-top:4px}
+.tl-time{font-size:11px;color:var(--text3);margin-bottom:2px}
+.tl-title{font-size:13.5px;font-weight:600;color:var(--text)}
+.tl-sub{font-size:11.5px;color:var(--text2);margin-top:2px}
+
+/* ── GPS MAP ── */
+.map-box{background:var(--bg2);border-radius:10px;height:180px;position:relative;overflow:hidden}
+.map-grid-h,.map-grid-v{position:absolute;background:rgba(255,255,255,.03)}
+.map-grid-h{left:0;right:0;height:1px}
+.map-grid-v{top:0;bottom:0;width:1px}
+.map-pin-ring{position:absolute;border-radius:50%;border:1.5px solid rgba(245,200,66,.3)}
+.map-pin-dot{position:absolute;width:13px;height:13px;border-radius:50%;background:var(--gold);border:2.5px solid var(--bg)}
+
+/* ── TRAINING CARD ── */
+.train-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:.18s}
+.train-card:hover{transform:translateY(-2px);border-color:var(--border2)}
+.train-thumb{height:110px;display:flex;align-items:center;justify-content:center;position:relative}
+.train-play{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:14px}
+.train-step{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.5);border-radius:6px;padding:2px 7px;font-size:10px;color:#fff;font-weight:700}
+.train-body{padding:12px}
+.train-cat{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px}
+.train-title{font-size:13px;font-weight:700;color:var(--text);line-height:1.4;margin-bottom:8px}
+.train-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.train-dur{font-size:11px;color:var(--text3)}
+
+/* ── INPUT ── */
+.field-label{font-size:10px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;font-weight:600;margin-bottom:7px}
+.input{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;width:100%;outline:none;transition:.15s}
+.input:focus{border-color:rgba(245,200,66,.4);background:rgba(245,200,66,.03)}
+textarea.input{resize:vertical;min-height:80px}
+.select-fake{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-size:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+
+/* ── FILTER CHIPS ── */
+.chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{padding:6px 16px;border-radius:99px;border:1px solid transparent;background:rgba(255,255,255,.04);font-size:12px;color:var(--text2);cursor:pointer;font-weight:500;transition:.15s}
+.chip:hover{color:var(--text)}
+.chip.active{background:rgba(245,200,66,.15);border-color:rgba(245,200,66,.3);color:var(--gold);font-weight:700}
+
+/* ── CLOCK BUTTON ── */
+.clock-btn{width:150px;height:150px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:.18s;border:3px solid;font-family:'DM Sans',sans-serif}
+.clock-btn.out-state{border-color:rgba(0,229,160,.4);background:rgba(0,229,160,.08)}
+.clock-btn.out-state:hover{border-color:rgba(0,229,160,.7);background:rgba(0,229,160,.13)}
+.clock-btn.in-state{border-color:rgba(255,77,106,.4);background:rgba(255,77,106,.08)}
+.clock-btn.in-state:hover{border-color:rgba(255,77,106,.7)}
+.clock-btn-icon{font-size:28px;margin-bottom:5px}
+.clock-btn-label{font-size:13px;font-weight:800;letter-spacing:.5px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:13px 22px;font-size:13.5px;z-index:999;pointer-events:none;opacity:0;transition:opacity .2s;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* ── DONUT SEGMENT ── */
+.dist-bar{height:12px;border-radius:6px;display:flex;overflow:hidden;margin-bottom:14px}
+.dist-seg{transition:flex .4s}
+.dist-legend{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dist-item{display:flex;align-items:center;gap:7px}
+.dist-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.2)}
+
+/* ── ANIMATIONS ── */
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .28s ease}
+
+/* ── PERIOD TABS ── */
+.period-row{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:3px;margin-bottom:20px;width:fit-content}
+.period-btn{padding:7px 18px;border-radius:7px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s;color:var(--text2)}
+.period-btn.active{background:var(--gold);color:var(--bg);font-family:'Syne',sans-serif}
+
+/* ── KPI BAR ── */
+.kpi-row{margin-bottom:14px}
+.kpi-header{display:flex;justify-content:space-between;margin-bottom:5px;font-size:12.5px}
+.kpi-label{color:var(--text2)}
+.kpi-val{font-weight:700}
+
+/* ── RESPONSIVE TOPBAR ── */
+.tb-title{display:flex;align-items:center;gap:12px}
+
+/* ── EMPLOYEE EXPAND ── */
+.emp-expand{display:none;padding:12px 0 4px;border-top:1px solid var(--border);margin-top:10px}
+.emp-expand.open{display:block}
+.emp-detail-grid{display:flex;gap:24px;margin-bottom:12px;flex-wrap:wrap}
+.emp-detail-item .d-label{font-size:9px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;font-weight:600;margin-bottom:3px}
+.emp-detail-item .d-val{font-size:13.5px;font-weight:600;color:var(--text)}
+.emp-actions{display:flex;gap:8px}
+.emp-action-btn{flex:1;padding:8px;border:1px solid var(--border2);border-radius:7px;background:none;color:var(--gold);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s}
+.emp-action-btn:hover{background:rgba(245,200,66,.07)}
+.emp-action-btn.danger{color:var(--red);border-color:rgba(255,77,106,.3)}
+.emp-action-btn.danger:hover{background:rgba(255,77,106,.07)}
+
+/* ── SEVERITY BTNS ── */
+.sev-row{display:flex;gap:8px;margin-bottom:16px}
+.sev-btn{flex:1;padding:9px;border:1px solid var(--border);border-radius:8px;background:none;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s}
+.sev-btn.active-low{border-color:var(--green);background:rgba(0,229,160,.1);color:var(--green)}
+.sev-btn.active-medium{border-color:var(--amber);background:rgba(255,149,0,.1);color:var(--amber)}
+.sev-btn.active-critical{border-color:var(--red);background:rgba(255,77,106,.1);color:var(--red)}
+
+/* ── SWITCH ── */
+.switch-wrap{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.switch-wrap:last-child{border-bottom:none}
+.switch-icon{font-size:16px;width:34px;height:34px;background:rgba(255,255,255,.05);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.switch-label{flex:1;font-size:14px;font-weight:500;color:var(--text)}
+.switch{position:relative;width:42px;height:24px;cursor:pointer}
+.switch input{display:none}
+.switch-slider{position:absolute;inset:0;background:rgba(255,255,255,.12);border-radius:12px;transition:.25s}
+.switch-slider::after{content:'';position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:3px;left:3px;transition:.25s}
+.switch input:checked+.switch-slider{background:var(--gold)}
+.switch input:checked+.switch-slider::after{transform:translateX(18px)}
+
+/* ── LOGIN ── */
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+.login-card{background:rgba(22,22,42,.95);border:1px solid rgba(245,200,66,.2);border-radius:24px;padding:40px;width:420px;max-width:90vw}
+.login-logo{display:flex;align-items:center;gap:12px;margin-bottom:32px}
+.role-row{display:flex;gap:8px;margin-bottom:24px}
+.role-btn{flex:1;padding:9px;border:1px solid var(--border);border-radius:8px;background:none;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s;text-align:center}
+.role-btn.active{border-color:var(--gold);background:rgba(245,200,66,.08);color:var(--gold);font-weight:700}
+
+/* ── MISC ── */
+.flex{display:flex}.flex-col{flex-direction:column}.items-center{align-items:center}.gap-10{gap:10px}.gap-12{gap:12px}.gap-14{gap:14px}.gap-16{gap:16px}.gap-20{gap:20px}.justify-between{justify-content:space-between}.flex-1{flex:1}.ml-auto{margin-left:auto}.mb-4{margin-bottom:4px}.mb-8{margin-bottom:8px}.mb-12{margin-bottom:12px}.mb-16{margin-bottom:16px}.mb-20{margin-bottom:20px}.mb-24{margin-bottom:24px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}.text-gold{color:var(--gold)}.text-cyan{color:var(--cyan)}.text-green{color:var(--green)}.text-red{color:var(--red)}.text-purple{color:var(--purple)}.text-amber{color:var(--amber)}.text-muted{color:var(--text2)}.text-dim{color:var(--text3)}.text-sm{font-size:12px}.text-xs{font-size:11px}.bold{font-weight:700}.w-full{width:100%}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pulse{animation:pulse 1.6s ease-in-out infinite}
+.center{text-align:center}
+
+/* ── RESPONSIVE ADDITIONS ─────────────────────────────────────────────────── */
+
+/* Hamburger button (hidden on desktop) */
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:6px 8px;color:var(--text);font-size:22px;line-height:1;flex-shrink:0;border-radius:8px;transition:.15s}
+.hamburger:hover{background:rgba(255,255,255,.05)}
+
+/* Sidebar overlay backdrop */
+.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99;opacity:0;pointer-events:none;transition:opacity .25s}
+.sidebar-overlay.open{opacity:1;pointer-events:auto}
+
+/* Horizontal scroll for tables on small screens */
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:inherit}
+.table-scroll .table{min-width:520px}
+
+/* ── TABLET (≤ 1024px) ── */
+@media(max-width:1024px){
+  .sidebar{width:210px;min-width:210px}
+  .grid4{grid-template-columns:1fr 1fr}
+  .search-box input{width:120px}
+  #training-grid{grid-template-columns:1fr 1fr!important}
+}
+
+/* ── SMALL TABLET / LARGE MOBILE (≤ 768px) ── */
+@media(max-width:768px){
+  /* Sidebar becomes a fixed slide-in drawer */
+  .sidebar{
+    position:fixed;
+    left:-260px;top:0;bottom:0;
+    z-index:100;
+    width:240px;min-width:240px;
+    transition:left .26s ease;
+    overflow-y:auto;
+    box-shadow:4px 0 32px rgba(0,0,0,.5);
+  }
+  .sidebar.open{left:0}
+
+  /* Show hamburger, hide search */
+  .hamburger{display:flex;align-items:center;justify-content:center}
+  .search-box{display:none}
+  .topbar-right .btn-outline{display:none}
+  .topbar{padding:0 12px;gap:10px}
+  .page-title{font-size:15px}
+
+  /* Collapse content padding */
+  .content{padding:14px}
+
+  /* Collapse all grids */
+  .grid4{grid-template-columns:1fr 1fr}
+  .grid3{grid-template-columns:1fr 1fr}
+  .grid2{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  #training-grid{grid-template-columns:1fr 1fr!important}
+
+  /* Employee details */
+  .emp-detail-grid{flex-direction:column;gap:8px}
+  .emp-actions{flex-wrap:wrap}
+  .emp-action-btn{flex:1 1 40%}
+
+  /* Clock screen */
+  .clock-layout-grid{grid-template-columns:1fr!important}
+
+  /* Period tabs wrap */
+  .period-row{flex-wrap:wrap;width:auto}
+
+  /* Schedule controls stack */
+  .schedule-controls{flex-direction:column;align-items:flex-start;gap:10px}
+
+  /* Training header */
+  .train-header-row{flex-direction:column;align-items:flex-start;gap:8px}
+
+  /* Incidents grid */
+  .inc-grid{grid-template-columns:1fr!important}
+
+  /* Analytics stat cards */
+  .analytics-top{grid-template-columns:1fr 1fr!important}
+
+  /* Payroll grid */
+  .payroll-bottom{grid-template-columns:1fr!important}
+}
+
+/* ── MOBILE (≤ 480px) ── */
+@media(max-width:480px){
+  .content{padding:10px}
+  .topbar{height:50px;min-height:50px;padding:0 10px;gap:8px}
+
+  /* 1-column grids everywhere */
+  .grid4{grid-template-columns:1fr 1fr}
+  .grid3{grid-template-columns:1fr}
+  #training-grid{grid-template-columns:1fr!important}
+  .analytics-top{grid-template-columns:1fr 1fr!important}
+
+  /* Reduce stat card font */
+  .stat-value{font-size:22px}
+  .stat-icon{font-size:18px;margin-bottom:6px}
+  .stat-card{padding:14px}
+
+  /* Live clock */
+  #live-clock{font-size:34px!important;letter-spacing:-1px!important}
+
+  /* Payroll big number */
+  .payroll-big{font-size:32px!important}
+
+  /* Login card */
+  .login-card{padding:24px 16px;border-radius:16px}
+  .login-card h2{font-size:20px}
+
+  /* Page title */
+  .page-title{font-size:13px}
+
+  /* Hide second topbar icon on very small screens */
+  .topbar-right .tb-btn:nth-child(3){display:none}
+
+  /* Chip rows scroll horizontally */
+  .chip-row{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .chip-row::-webkit-scrollbar{display:none}
+
+  /* Sev buttons stack */
+  .sev-row{flex-direction:column}
+
+  /* Profile stats */
+  .profile-stats-row{padding:10px 0}
+
+  /* Cards */
+  .card,.card-sm{padding:14px}
+}
+
+/* ── TINY MOBILE (≤ 360px) ── */
+@media(max-width:360px){
+  .grid4{grid-template-columns:1fr}
+  .analytics-top{grid-template-columns:1fr!important}
+  .role-row{flex-direction:column}
+  .role-btn{width:100%;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-view" class="login-screen">
+  <div class="login-card fade-up">
+    <div class="login-logo">
+      <div class="logo-mark" style="width:46px;height:46px;font-size:20px">G</div>
+      <span class="logo" style="font-size:22px">GWM <span>INC</span></span>
+    </div>
+    <h2 style="font-size:26px;font-weight:800;margin-bottom:6px">Welcome back 👋</h2>
+    <p class="text-muted mb-24">Sign in to your Employee Operations account</p>
+    <div class="mb-16">
+      <div class="field-label">Email Address</div>
+      <input class="input" value="admin@gwminc.com" type="email">
+    </div>
+    <div class="mb-16">
+      <div class="field-label">Password</div>
+      <input class="input" value="••••••••" type="password">
+    </div>
+    <div class="field-label mb-8" style="margin-bottom:8px">Sign in as</div>
+    <div class="role-row mb-24">
+      <button class="role-btn active" onclick="setRole(this,'admin')">🛡️ Admin</button>
+      <button class="role-btn" onclick="setRole(this,'manager')">👔 Manager</button>
+      <button class="role-btn" onclick="setRole(this,'employee')">👷 Employee</button>
+    </div>
+    <button class="btn-primary w-full" style="font-size:15px;padding:14px" onclick="doLogin()">Sign In →</button>
+    <p class="text-dim text-xs center mt-12">Secured by JWT · GWM INC © 2026</p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app-view" class="app" style="display:none">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo-row">
+      <div class="logo-mark">G</div>
+      <span class="logo">GWM <span>INC</span></span>
+    </div>
+
+    <div class="nav-section">Main</div>
+    <nav id="nav">
+      <div class="nav-item active" data-screen="dashboard" onclick="goto(this)"><span class="icon">📊</span>Dashboard</div>
+      <div class="nav-item" data-screen="schedule" onclick="goto(this)"><span class="icon">📅</span>Schedule</div>
+      <div class="nav-item" data-screen="clockin" onclick="goto(this)"><span class="icon">🕐</span>Clock In/Out</div>
+      <div class="nav-item" data-screen="jobs" onclick="goto(this)"><span class="icon">🔧</span>Jobs</div>
+
+      <div class="nav-section" style="margin-top:8px">HR & Operations</div>
+      <div class="nav-item" data-screen="payroll" onclick="goto(this)"><span class="icon">💰</span>Payroll</div>
+      <div class="nav-item" data-screen="incidents" onclick="goto(this)"><span class="icon">⚠️</span>Incidents<span class="nav-badge">3</span></div>
+      <div class="nav-item" data-screen="training" onclick="goto(this)"><span class="icon">🎓</span>Training</div>
+
+      <div class="nav-section" style="margin-top:8px">Admin</div>
+      <div class="nav-item" data-screen="employees" onclick="goto(this)"><span class="icon">👥</span>Employees</div>
+      <div class="nav-item" data-screen="analytics" onclick="goto(this)"><span class="icon">📈</span>Analytics</div>
+      <div class="nav-item" data-screen="profile" onclick="goto(this)"><span class="icon">👤</span>My Profile</div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-row" onclick="goto(document.querySelector('[data-screen=profile]'))">
+        <div class="user-avatar">AD</div>
+        <div>
+          <div class="user-name">Alex Davies</div>
+          <div class="user-role">Admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" aria-label="Toggle menu">☰</button>
+      <div class="tb-title">
+        <span class="page-title" id="page-title">Dashboard</span>
+      </div>
+      <div class="topbar-right">
+        <div class="search-box"><span style="color:var(--text3);font-size:14px">🔍</span><input placeholder="Search…"></div>
+        <div class="tb-btn" onclick="toast('🔔 3 new notifications')"><span>🔔</span><span class="tb-dot"></span></div>
+        <div class="tb-btn" onclick="toast('⚙️ Settings — coming soon')"><span>⚙️</span></div>
+        <button class="btn-outline btn-sm" style="color:var(--text2)" onclick="doLogout()">⬅ Sign out</button>
+      </div>
+    </div>
+    <div class="content" id="content-area">
+
+      <!-- ══ DASHBOARD ══ -->
+      <div id="screen-dashboard" class="screen active fade-up">
+        <div class="grid4 mb-20">
+          <div class="stat-card" style="border-color:rgba(245,200,66,.2)" onclick="goto(document.querySelector('[data-screen=employees]'))">
+            <div class="stat-icon">👥</div>
+            <div class="stat-label">Total Employees</div>
+            <div class="stat-value text-gold">247</div>
+            <div class="stat-change">↑ 12 this month</div>
+          </div>
+          <div class="stat-card" style="border-color:rgba(0,212,255,.2)" onclick="goto(document.querySelector('[data-screen=clockin]'))">
+            <div class="stat-icon">✅</div>
+            <div class="stat-label">Clocked In Today</div>
+            <div class="stat-value text-cyan">184</div>
+            <div class="stat-change">↑ 94.8% attendance</div>
+          </div>
+          <div class="stat-card" style="border-color:rgba(0,229,160,.2)" onclick="goto(document.querySelector('[data-screen=jobs]'))">
+            <div class="stat-icon">🔧</div>
+            <div class="stat-label">Active Jobs</div>
+            <div class="stat-value text-green">38</div>
+            <div class="stat-change">↑ 7 new this week</div>
+          </div>
+          <div class="stat-card" style="border-color:rgba(168,85,247,.2)" onclick="goto(document.querySelector('[data-screen=incidents]'))">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-label">Open Incidents</div>
+            <div class="stat-value text-purple">3</div>
+            <div class="stat-change neg">↑ 1 critical</div>
+          </div>
+        </div>
+
+        <div class="grid2 mb-16">
+          <!-- Attendance Chart -->
+          <div class="card">
+            <div class="sec-title">Weekly Attendance</div>
+            <div class="sec-sub">Hours across all staff</div>
+            <div class="bar-chart" style="height:110px">
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:88%;background:var(--cyan)"></div></div><div class="bar-label">Mon</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:100%;background:var(--cyan)"></div></div><div class="bar-label">Tue</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:85%;background:var(--cyan)"></div></div><div class="bar-label">Wed</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:97%;background:rgba(0,212,255,.35)"></div></div><div class="bar-label">Thu</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:93%;background:rgba(0,212,255,.35)"></div></div><div class="bar-label">Fri</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:38%;background:rgba(0,212,255,.2)"></div></div><div class="bar-label">Sat</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:18%;background:rgba(0,212,255,.15)"></div></div><div class="bar-label">Sun</div></div>
+            </div>
+          </div>
+          <!-- Live Attendance -->
+          <div class="card">
+            <div class="flex justify-between items-center mb-12">
+              <div><div class="sec-title">Live Attendance</div><div class="sec-sub" style="margin-bottom:0">Today's status</div></div>
+              <div style="width:9px;height:9px;background:var(--green);border-radius:50%;animation:pulse 1.6s infinite"></div>
+            </div>
+            <div id="att-list"></div>
+          </div>
+        </div>
+
+        <div class="grid2 mb-16">
+          <!-- Payroll Trend -->
+          <div class="card">
+            <div class="sec-title">Payroll Trend</div>
+            <div class="sec-sub">6-month disbursement (£k)</div>
+            <div class="bar-chart" style="height:90px">
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:86%;background:var(--gold)"></div></div><div class="bar-label">Nov</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:100%;background:var(--gold)"></div></div><div class="bar-label">Dec</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:91%;background:rgba(245,200,66,.4)"></div></div><div class="bar-label">Jan</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:95%;background:rgba(245,200,66,.4)"></div></div><div class="bar-label">Feb</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:93%;background:rgba(245,200,66,.4)"></div></div><div class="bar-label">Mar</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:99%;background:var(--gold)"></div></div><div class="bar-label">Apr</div></div>
+            </div>
+          </div>
+          <!-- Activity Timeline -->
+          <div class="card">
+            <div class="sec-title mb-12">Today's Activity</div>
+            <div id="timeline-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SCHEDULE ══ -->
+      <div id="screen-schedule" class="screen fade-up">
+        <div class="flex justify-between items-center mb-20 schedule-controls">
+          <div class="flex items-center gap-16">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:9px;display:flex;align-items:center;gap:10px;padding:0 4px">
+              <button class="btn-outline btn-sm" style="border:none;padding:6px 10px" onclick="toast('◀ Previous month')">‹</button>
+              <span style="font-size:17px;font-weight:800;font-family:Syne,sans-serif;min-width:110px;text-align:center">April 2026</span>
+              <button class="btn-outline btn-sm" style="border:none;padding:6px 10px" onclick="toast('▶ Next month')">›</button>
+            </div>
+          </div>
+          <button class="btn-primary btn-sm" onclick="toast('➕ New shift created!')">+ Add Shift</button>
+        </div>
+
+        <!-- Mini calendar grid -->
+        <div class="card mb-16">
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:8px">
+            <div class="bar-label center" style="padding:6px 0">SUN</div>
+            <div class="bar-label center" style="padding:6px 0">MON</div>
+            <div class="bar-label center" style="padding:6px 0">TUE</div>
+            <div class="bar-label center" style="padding:6px 0">WED</div>
+            <div class="bar-label center" style="padding:6px 0">THU</div>
+            <div class="bar-label center" style="padding:6px 0">FRI</div>
+            <div class="bar-label center" style="padding:6px 0">SAT</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px" id="cal-grid"></div>
+        </div>
+
+        <!-- Shifts Table -->
+        <div class="card">
+          <div class="sec-title mb-12">Assigned Shifts</div>
+          <div class="table-scroll">
+          <table class="table">
+            <thead><tr><th>Employee</th><th>Shift</th><th>Time</th><th>Location</th><th>Status</th></tr></thead>
+            <tbody id="shifts-table"></tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ CLOCK IN/OUT ══ -->
+      <div id="screen-clockin" class="screen fade-up">
+        <div class="grid2 clock-layout-grid mb-16">
+          <div class="card center" style="padding:32px 24px">
+            <div class="text-muted text-sm mb-4">Employee: Tom Walker · #EMP-113</div>
+            <div id="live-clock" style="font-size:52px;font-weight:800;color:var(--gold);font-family:Syne,sans-serif;letter-spacing:-2px;margin-bottom:4px">00:00:00</div>
+            <div class="text-dim text-sm" style="margin-bottom:28px" id="live-date">Monday, April 20, 2026</div>
+            <div id="clock-btn-wrap" style="display:flex;justify-content:center;margin-bottom:20px">
+              <div class="clock-btn out-state pulse" id="clock-btn" onclick="toggleClock()">
+                <div class="clock-btn-icon">▶</div>
+                <div class="clock-btn-label" id="clock-label" style="color:var(--green)">CLOCK IN</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-10" style="justify-content:center;margin-bottom:20px">
+              <div style="width:7px;height:7px;background:var(--green);border-radius:50%"></div>
+              <span class="text-sm text-green">GPS Verified · Site Alpha · 150m radius</span>
+            </div>
+            <div class="hr"></div>
+            <div class="grid3" style="gap:10px;margin-top:12px">
+              <div style="border:1px solid rgba(0,229,160,.2);background:rgba(0,229,160,.05);border-radius:9px;padding:12px">
+                <div class="bar-label center mb-4">Today</div>
+                <div class="text-green bold center" style="font-size:17px" id="today-hours">0h 0m</div>
+              </div>
+              <div style="border:1px solid rgba(0,212,255,.2);background:rgba(0,212,255,.05);border-radius:9px;padding:12px">
+                <div class="bar-label center mb-4">This Week</div>
+                <div class="text-cyan bold center" style="font-size:17px">32h 15m</div>
+              </div>
+              <div style="border:1px solid rgba(245,200,66,.2);background:rgba(245,200,66,.05);border-radius:9px;padding:12px">
+                <div class="bar-label center mb-4">Month</div>
+                <div class="text-gold bold center" style="font-size:17px">124h 40m</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-14">
+            <!-- GPS Map -->
+            <div class="card" style="flex:1">
+              <div class="sec-title mb-12">GPS Location</div>
+              <div class="map-box" id="map-box"></div>
+              <div class="flex justify-between mt-12">
+                <span class="text-sm text-muted">📍 51.5074° N, 0.1278° W</span>
+                <span class="text-sm text-green">✓ Within geo-fence</span>
+              </div>
+            </div>
+            <!-- Events -->
+            <div class="card">
+              <div class="sec-title mb-12">Today's Clock Events</div>
+              <div id="clock-events"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ JOBS ══ -->
+      <div id="screen-jobs" class="screen fade-up">
+        <div class="grid3 mb-16">
+          <div style="background:var(--surface);border:1px solid rgba(0,229,160,.2);border-radius:var(--r);padding:16px">
+            <div class="bar-label mb-4">In Progress</div>
+            <div class="stat-value text-green" style="font-size:28px">24</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid rgba(245,200,66,.2);border-radius:var(--r);padding:16px">
+            <div class="bar-label mb-4">Scheduled</div>
+            <div class="stat-value text-gold" style="font-size:28px">14</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid rgba(0,212,255,.2);border-radius:var(--r);padding:16px">
+            <div class="bar-label mb-4">Completed Today</div>
+            <div class="stat-value text-cyan" style="font-size:28px">7</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="flex justify-between items-center mb-16">
+            <div><div class="sec-title">All Jobs</div><div class="sec-sub" style="margin-bottom:0">Click a job to view details</div></div>
+            <button class="btn-primary btn-sm" onclick="toast('➕ New job created')">+ New Job</button>
+          </div>
+          <div class="table-scroll">
+          <table class="table">
+            <thead><tr><th>Job</th><th>Team</th><th>Site</th><th>Priority</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="jobs-table"></tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PAYROLL ══ -->
+      <div id="screen-payroll" class="screen fade-up">
+        <div class="card mb-16" style="border-color:rgba(245,200,66,.15)">
+          <div class="bar-label mb-8">April 2026 Payroll</div>
+          <div class="payroll-big" style="font-size:52px;font-weight:800;color:var(--gold);font-family:Syne,sans-serif;margin-bottom:4px">£47,820.00</div>
+          <div class="text-muted text-sm mb-20">Total disbursement · 247 employees · <span class="badge-green badge">Approved ✓</span></div>
+          <div class="flex gap-20 flex-wrap">
+            <div><div class="bar-label mb-4">Base Pay</div><div class="bold text-gold" style="font-size:15px">£38,400</div></div>
+            <div><div class="bar-label mb-4">Overtime</div><div class="bold text-cyan" style="font-size:15px">£7,240</div></div>
+            <div><div class="bar-label mb-4">Deductions</div><div class="bold text-red" style="font-size:15px">-£4,180</div></div>
+            <div><div class="bar-label mb-4">Bonuses</div><div class="bold text-green" style="font-size:15px">£6,360</div></div>
+          </div>
+        </div>
+
+        <div class="grid2 mb-16">
+          <div class="card">
+            <div class="sec-title mb-12">Breakdown — April</div>
+            <div class="table-scroll">
+            <table class="table" style="font-size:13px">
+              <thead><tr><th>Type</th><th>Hours</th><th>Rate</th><th style="text-align:right">Amount</th></tr></thead>
+              <tbody>
+                <tr><td class="emp-name">Regular Hours</td><td>160h</td><td>£14.50/h</td><td style="text-align:right;color:var(--text)">£2,320.00</td></tr>
+                <tr><td class="emp-name text-cyan">Overtime</td><td>22h</td><td>£21.75/h</td><td style="text-align:right;color:var(--cyan)">£478.50</td></tr>
+                <tr><td class="emp-name text-purple">Night Diff</td><td>40h</td><td>£3.00/h</td><td style="text-align:right;color:var(--purple)">£120.00</td></tr>
+                <tr><td class="emp-name text-gold">Holiday Pay</td><td>8h</td><td>£29.00/h</td><td style="text-align:right;color:var(--gold)">£232.00</td></tr>
+                <tr><td class="emp-name text-red">Tax (PAYE)</td><td>—</td><td>20%</td><td style="text-align:right;color:var(--red)">-£630.10</td></tr>
+                <tr><td class="emp-name text-red">NI Contributions</td><td>—</td><td>12%</td><td style="text-align:right;color:var(--red)">-£280.90</td></tr>
+              </tbody>
+            </table>
+            </div>
+            <div class="hr"></div>
+            <div class="flex justify-between items-center">
+              <span class="bold text-gold" style="font-size:15px">Net Pay</span>
+              <span class="bold text-gold" style="font-size:17px">£2,239.50</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="sec-title mb-16">Pay Distribution</div>
+            <div class="dist-bar">
+              <div class="dist-seg" style="flex:65;background:var(--gold)"></div>
+              <div class="dist-seg" style="flex:12;background:var(--cyan)"></div>
+              <div class="dist-seg" style="flex:11;background:var(--green)"></div>
+              <div class="dist-seg" style="flex:7;background:var(--red)"></div>
+            </div>
+            <div class="dist-legend">
+              <div class="dist-item"><div class="dist-dot" style="background:var(--gold)"></div><span class="text-sm text-muted flex-1">Base</span><span class="text-sm text-gold bold">£38,400</span></div>
+              <div class="dist-item"><div class="dist-dot" style="background:var(--cyan)"></div><span class="text-sm text-muted flex-1">Overtime</span><span class="text-sm text-cyan bold">£7,240</span></div>
+              <div class="dist-item"><div class="dist-dot" style="background:var(--green)"></div><span class="text-sm text-muted flex-1">Bonuses</span><span class="text-sm text-green bold">£6,360</span></div>
+              <div class="dist-item"><div class="dist-dot" style="background:var(--red)"></div><span class="text-sm text-muted flex-1">Deductions</span><span class="text-sm text-red bold">-£4,180</span></div>
+            </div>
+            <div class="hr"></div>
+            <div class="sec-title mb-8">6-Month Trend</div>
+            <div class="bar-chart" style="height:80px">
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:86%;background:rgba(245,200,66,.35)"></div></div><div class="bar-label">Nov</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:100%;background:rgba(245,200,66,.35)"></div></div><div class="bar-label">Dec</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:91%;background:rgba(245,200,66,.35)"></div></div><div class="bar-label">Jan</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:95%;background:rgba(245,200,66,.35)"></div></div><div class="bar-label">Feb</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:93%;background:rgba(245,200,66,.35)"></div></div><div class="bar-label">Mar</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:99%;background:var(--gold)"></div></div><div class="bar-label">Apr</div></div>
+            </div>
+          </div>
+        </div>
+        <button class="btn-primary w-full" style="padding:14px;font-size:14px" onclick="toast('📄 Payslip PDF downloaded!')">⬇ Download PDF Payslip</button>
+      </div>
+
+      <!-- ══ INCIDENTS ══ -->
+      <div id="screen-incidents" class="screen fade-up">
+        <div class="grid2 inc-grid mb-16">
+          <div class="card">
+            <div class="sec-title mb-16">Open Incidents</div>
+            <div id="incidents-list"></div>
+          </div>
+          <div class="card">
+            <div class="sec-title mb-16">📝 Report New Incident</div>
+            <div class="form-row mb-12">
+              <div><div class="field-label">Incident Type</div><div class="select-fake">Equipment Failure<span>▾</span></div></div>
+              <div><div class="field-label">Location</div><input class="input" value="Site Alpha"></div>
+            </div>
+            <div class="field-label">Severity</div>
+            <div class="sev-row mb-12" id="sev-btns">
+              <button class="sev-btn" onclick="setSev(this,'low')">🟢 Low</button>
+              <button class="sev-btn active-medium" onclick="setSev(this,'medium')">🟡 Medium</button>
+              <button class="sev-btn" onclick="setSev(this,'critical')">🔴 High</button>
+            </div>
+            <div><div class="field-label">Description</div><textarea class="input" rows="4">Forklift truck B-07 showed hydraulic pressure loss during routine pallet lift. Operator safely stopped the vehicle.</textarea></div>
+            <div class="form-row mt-12 mb-16">
+              <div><div class="field-label">Reported By</div><input class="input" value="Tom Walker"></div>
+              <div><div class="field-label">Date & Time</div><input class="input" value="20 Apr 2026 · 09:28" readonly></div>
+            </div>
+            <button class="btn-primary w-full" onclick="toast('✅ Incident #INC-015 submitted — Admin notified!')">Submit Report →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TRAINING ══ -->
+      <div id="screen-training" class="screen fade-up">
+        <div class="flex justify-between items-center mb-16 train-header-row">
+          <div class="chip-row" style="margin-bottom:0" id="train-filters">
+            <div class="chip active" onclick="filterTraining(this,'All')">All</div>
+            <div class="chip" onclick="filterTraining(this,'Safety')">Safety</div>
+            <div class="chip" onclick="filterTraining(this,'Operations')">Operations</div>
+            <div class="chip" onclick="filterTraining(this,'Compliance')">Compliance</div>
+            <div class="chip" onclick="filterTraining(this,'Health')">Health</div>
+          </div>
+          <span class="text-muted text-sm">3 completed · 2 in progress</span>
+        </div>
+        <div id="training-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px"></div>
+      </div>
+
+      <!-- ══ EMPLOYEES ══ -->
+      <div id="screen-employees" class="screen fade-up">
+        <div class="flex gap-12 mb-16">
+          <div class="flex-1" style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:0 12px">
+            <span style="color:var(--text3)">🔍</span>
+            <input class="input" style="border:none;background:none;padding:9px 0;flex:1" placeholder="Search employees…" oninput="filterEmps(this.value)" id="emp-search">
+          </div>
+          <button class="btn-primary btn-sm" onclick="toast('➕ Add Employee form — coming soon')">+ Add Employee</button>
+        </div>
+        <div class="chip-row" id="emp-filters">
+          <div class="chip active" onclick="setEmpFilter(this,'All')">All</div>
+          <div class="chip" onclick="setEmpFilter(this,'Active')">Active</div>
+          <div class="chip" onclick="setEmpFilter(this,'On Leave')">On Leave</div>
+          <div class="chip" onclick="setEmpFilter(this,'Part-time')">Part-time</div>
+        </div>
+        <div id="emp-list"></div>
+      </div>
+
+      <!-- ══ ANALYTICS ══ -->
+      <div id="screen-analytics" class="screen fade-up">
+        <div class="flex items-center gap-12 mb-20">
+          <div class="period-row" style="margin-bottom:0" id="period-btns">
+            <div class="period-btn" onclick="setPeriod(this)">Week</div>
+            <div class="period-btn active" onclick="setPeriod(this)">Month</div>
+            <div class="period-btn" onclick="setPeriod(this)">Quarter</div>
+            <div class="period-btn" onclick="setPeriod(this)">Year</div>
+          </div>
+        </div>
+        <div class="grid4 mb-16">
+          <div class="stat-card" style="border-color:rgba(245,200,66,.2)"><div class="stat-icon">💷</div><div class="stat-label">Monthly Revenue</div><div class="stat-value text-gold">£284K</div><div class="stat-change">↑ 8.2% vs last</div></div>
+          <div class="stat-card" style="border-color:rgba(0,212,255,.2)"><div class="stat-icon">⏱</div><div class="stat-label">Avg Hours/Employee</div><div class="stat-value text-cyan">38.4h</div><div class="stat-change">↑ 2.1h vs target</div></div>
+          <div class="stat-card" style="border-color:rgba(0,229,160,.2)"><div class="stat-icon">✅</div><div class="stat-label">Job Completion</div><div class="stat-value text-green">94.7%</div><div class="stat-change">↑ 1.3% this week</div></div>
+          <div class="stat-card" style="border-color:rgba(168,85,247,.2)"><div class="stat-icon">🎓</div><div class="stat-label">Training Compliance</div><div class="stat-value text-purple">81%</div><div class="stat-change neg">↓ 4% below target</div></div>
+        </div>
+        <div class="grid2 mb-16">
+          <div class="card">
+            <div class="sec-title mb-4">KPI Targets — April</div>
+            <div class="sec-sub">Progress toward monthly goals</div>
+            <div class="kpi-row"><div class="kpi-header"><span class="kpi-label">Revenue Target</span><span class="kpi-val text-gold">£284K / £300K</span></div><div class="hbar-track"><div class="hbar-fill" style="width:94.6%;background:var(--gold)"></div></div></div>
+            <div class="kpi-row"><div class="kpi-header"><span class="kpi-label">Attendance Rate</span><span class="kpi-val text-cyan">94.8% / 96%</span></div><div class="hbar-track"><div class="hbar-fill" style="width:98.7%;background:var(--cyan)"></div></div></div>
+            <div class="kpi-row"><div class="kpi-header"><span class="kpi-label">Job Completion</span><span class="kpi-val text-green">94.7% / 95%</span></div><div class="hbar-track"><div class="hbar-fill" style="width:99.7%;background:var(--green)"></div></div></div>
+            <div class="kpi-row"><div class="kpi-header"><span class="kpi-label">Training Compliance</span><span class="kpi-val text-purple">81% / 90%</span></div><div class="hbar-track"><div class="hbar-fill" style="width:90%;background:var(--purple)"></div></div></div>
+            <div class="kpi-row" style="margin-bottom:0"><div class="kpi-header"><span class="kpi-label">Incident Resolution</span><span class="kpi-val text-amber">7 / 10</span></div><div class="hbar-track"><div class="hbar-fill" style="width:70%;background:var(--amber)"></div></div></div>
+          </div>
+          <div class="card">
+            <div class="sec-title mb-4">Workforce by Department</div>
+            <div class="sec-sub">247 total employees</div>
+            <div class="dist-bar" style="height:14px;border-radius:7px">
+              <div class="dist-seg" style="flex:89;background:var(--gold)"></div>
+              <div class="dist-seg" style="flex:62;background:var(--cyan)"></div>
+              <div class="dist-seg" style="flex:38;background:var(--purple)"></div>
+              <div class="dist-seg" style="flex:24;background:var(--green)"></div>
+              <div class="dist-seg" style="flex:21;background:var(--amber)"></div>
+              <div class="dist-seg" style="flex:13;background:var(--red)"></div>
+            </div>
+            <div class="dist-legend mt-12">
+              <div class="dist-item"><div class="dist-dot" style="background:var(--gold)"></div><span class="text-sm text-muted flex-1">Operations</span><span class="text-sm text-gold bold">89</span></div>
+              <div class="dist-item"><div class="dist-dot" style="background:var(--cyan)"></div><span class="text-sm text-muted flex-1">Field Tech</span><span class="text-sm text-cyan bold">62</span></div>
+              <div class="dist-item"><div class="dist-dot" style="background:var(--purple)"></div><span class="text-sm text-muted flex-1">Admin</span><span class="text-sm text-purple bold">38</span></div>
+              <div class="dist-item"><div class="dist-dot" style="background:var(--green)"></div><span class="text-sm text-muted flex-1">HR</span><span class="text-sm text-green bold">24</span></div>
+              <div class="dist-item"><div class="dist-dot" style="background:var(--amber)"></div><span class="text-sm text-muted flex-1">Transport</span><span class="text-sm text-amber bold">21</span></div>
+              <div class="dist-item"><div class="dist-dot" style="background:var(--red)"></div><span class="text-sm text-muted flex-1">Management</span><span class="text-sm text-red bold">13</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="grid2 mb-16">
+          <div class="card">
+            <div class="sec-title mb-4">Training by Module</div>
+            <div class="sec-sub">% completion</div>
+            <div id="train-completion"></div>
+          </div>
+          <div class="card">
+            <div class="sec-title mb-4">Incident Trend</div>
+            <div class="sec-sub">Weekly reported count</div>
+            <div class="bar-chart" style="height:90px">
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:87%;background:var(--red)"></div></div><div class="bar-label">Wk1</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:63%;background:rgba(255,77,106,.5)"></div></div><div class="bar-label">Wk2</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:100%;background:var(--red)"></div></div><div class="bar-label">Wk3</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:38%;background:rgba(255,77,106,.4)"></div></div><div class="bar-label">Wk4</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:75%;background:rgba(255,77,106,.5)"></div></div><div class="bar-label">Wk5</div></div>
+              <div class="bar-col"><div class="bar-track"><div class="bar-fill" style="height:38%;background:rgba(255,77,106,.4)"></div></div><div class="bar-label">Wk6</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="sec-title mb-16">📌 Quick Insights</div>
+          <div style="border-left:3px solid var(--green);padding-left:12px;margin-bottom:12px"><span style="font-size:15px;margin-right:8px">🔥</span><span class="text-muted text-sm">Fire Evacuation module has 100% completion — best performing this month</span></div>
+          <div style="border-left:3px solid var(--amber);padding-left:12px;margin-bottom:12px"><span style="font-size:15px;margin-right:8px">⚠️</span><span class="text-muted text-sm">GDPR & Handling modules below 50% — requires urgent attention</span></div>
+          <div style="border-left:3px solid var(--cyan);padding-left:12px;margin-bottom:12px"><span style="font-size:15px;margin-right:8px">📈</span><span class="text-muted text-sm">Revenue is up 8.2% month-on-month — on track for quarterly target</span></div>
+          <div style="border-left:3px solid var(--red);padding-left:12px"><span style="font-size:15px;margin-right:8px">⏰</span><span class="text-muted text-sm">3 open incidents — oldest from 2 days ago, needs resolution</span></div>
+        </div>
+      </div>
+
+      <!-- ══ PROFILE ══ -->
+      <div id="screen-profile" class="screen fade-up">
+        <div class="grid2 mb-16">
+          <div class="card">
+            <div class="flex items-center gap-14 mb-16">
+              <div class="avatar" style="width:64px;height:64px;background:#a855f7;font-size:22px">AD</div>
+              <div style="flex:1">
+                <div style="font-size:20px;font-weight:800;margin-bottom:6px;font-family:Syne,sans-serif">Alex Davies</div>
+                <span class="badge badge-gold" style="margin-bottom:5px">ADMIN</span>
+                <div class="text-dim text-xs" style="margin-top:4px">#EMP-001</div>
+              </div>
+              <button class="btn-outline btn-sm" onclick="toast('✏️ Edit profile — coming soon')">Edit</button>
+            </div>
+            <div class="hr"></div>
+            <div class="grid3" style="padding-top:12px;gap:0">
+              <div class="center"><div style="font-size:18px;font-weight:800;color:var(--gold);font-family:Syne,sans-serif">40h</div><div class="bar-label mt-4">This Week</div></div>
+              <div class="center" style="border-left:1px solid var(--border);border-right:1px solid var(--border)"><div style="font-size:18px;font-weight:800;color:var(--cyan);font-family:Syne,sans-serif">124h</div><div class="bar-label mt-4">This Month</div></div>
+              <div class="center"><div style="font-size:18px;font-weight:800;color:var(--green);font-family:Syne,sans-serif">98.2%</div><div class="bar-label mt-4">Attendance</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="sec-title mb-16">💰 Payroll — April</div>
+            <div class="grid3 mb-16" style="gap:8px">
+              <div style="background:var(--bg2);border-radius:8px;padding:12px;text-align:center">
+                <div class="bar-label mb-4">Regular</div>
+                <div style="font-size:13px;font-weight:700;color:var(--text)">£2,320</div>
+              </div>
+              <div style="background:var(--bg2);border-radius:8px;padding:12px;text-align:center">
+                <div class="bar-label mb-4">Overtime</div>
+                <div style="font-size:13px;font-weight:700;color:var(--cyan)">£478</div>
+              </div>
+              <div style="background:var(--bg2);border-radius:8px;padding:12px;text-align:center">
+                <div class="bar-label mb-4">Net Pay</div>
+                <div style="font-size:13px;font-weight:700;color:var(--gold)">£2,239</div>
+              </div>
+            </div>
+            <button class="btn-outline w-full" style="border-color:rgba(245,200,66,.3);color:var(--gold)" onclick="toast('📄 Payslip downloaded!')">⬇ Download Payslip</button>
+          </div>
+        </div>
+        <div class="grid2 mb-16">
+          <div class="card">
+            <div class="sec-title mb-16">Personal Information</div>
+            <table class="table" style="font-size:13px">
+              <tbody>
+                <tr><td class="text-dim" style="border:none;padding:9px 0">Full Name</td><td style="border:none;text-align:right;color:var(--text);font-weight:500;padding:9px 0">Alex Davies</td></tr>
+                <tr><td class="text-dim" style="border-top:1px solid var(--border);padding:9px 0">Email</td><td style="border-top:1px solid var(--border);text-align:right;color:var(--cyan);padding:9px 0">alex.davies@gwminc.com</td></tr>
+                <tr><td class="text-dim" style="border-top:1px solid var(--border);padding:9px 0">Phone</td><td style="border-top:1px solid var(--border);text-align:right;padding:9px 0">+44 7700 123 456</td></tr>
+                <tr><td class="text-dim" style="border-top:1px solid var(--border);padding:9px 0">Department</td><td style="border-top:1px solid var(--border);text-align:right;padding:9px 0">Operations</td></tr>
+                <tr><td class="text-dim" style="border-top:1px solid var(--border);padding:9px 0">Start Date</td><td style="border-top:1px solid var(--border);text-align:right;padding:9px 0">12 Jan 2023</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card">
+            <div class="sec-title mb-16">Settings</div>
+            <div class="switch-wrap"><div class="switch-icon">🔔</div><span class="switch-label">Push Notifications</span><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></div>
+            <div class="switch-wrap"><div class="switch-icon">📍</div><span class="switch-label">GPS Location Access</span><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></div>
+            <div class="switch-wrap"><div class="switch-icon">🌙</div><span class="switch-label">Dark Mode</span><label class="switch"><input type="checkbox" checked><span class="switch-slider"></span></label></div>
+            <div class="switch-wrap"><div class="switch-icon">🔒</div><span class="switch-label">Biometric Login</span><label class="switch"><input type="checkbox"><span class="switch-slider"></span></label></div>
+          </div>
+        </div>
+        <button class="btn-outline w-full mb-8" onclick="doLogout()">⬅ Sign Out</button>
+        <p class="text-dim text-xs center">GWM INC Operations Platform · v1.0.0</p>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const EMPLOYEES=[
+  {id:'#EMP-001',name:'James Donaldson',initials:'JD',role:'Site Supervisor',dept:'Operations',hours:'40h',rate:'£16.50',color:'#f5c842',status:'active'},
+  {id:'#EMP-042',name:'Sarah Rashid',initials:'SR',role:'HR Manager',dept:'HR',hours:'37.5h',rate:'£19.00',color:'#a855f7',status:'active'},
+  {id:'#EMP-087',name:'Mike Chen',initials:'MC',role:'Field Tech',dept:'Field Tech',hours:'40h',rate:'£15.75',color:'#00d4ff',status:'active'},
+  {id:'#EMP-113',name:'Priya Okafor',initials:'PO',role:'Technician',dept:'Technician',hours:'35h',rate:'£14.50',color:'#ff4d6a',status:'leave'},
+  {id:'#EMP-118',name:'Tom Walker',initials:'TW',role:'Driver',dept:'Transport',hours:'40h',rate:'£13.80',color:'#00e5a0',status:'active'},
+  {id:'#EMP-124',name:'Lena Kowalski',initials:'LK',role:'Admin',dept:'Admin',hours:'30h',rate:'£17.25',color:'#f5c842',status:'parttime'},
+];
+const SHIFTS=[
+  {employee:'James Donaldson',initials:'JD',empId:'#EMP-001',color:'#f5c842',type:'morning',shift:'Morning',time:'06:00 – 14:00',location:'Site Alpha',status:'active'},
+  {employee:'Sarah Rashid',initials:'SR',empId:'#EMP-042',color:'#a855f7',type:'evening',shift:'Evening',time:'14:00 – 22:00',location:'Warehouse B',status:'upcoming'},
+  {employee:'Mike Chen',initials:'MC',empId:'#EMP-087',color:'#00d4ff',type:'night',shift:'Night',time:'22:00 – 06:00',location:'Site Beta',status:'offduty'},
+  {employee:'Tom Walker',initials:'TW',empId:'#EMP-118',color:'#00e5a0',type:'morning',shift:'Morning',time:'06:00 – 14:00',location:'Depot West',status:'active'},
+];
+const JOBS=[
+  {id:'#GWM-2041',title:'Electrical Maintenance',team:'Team Alpha',site:'Site A',priority:'high',status:'inprogress'},
+  {id:'#GWM-2042',title:'HVAC Inspection',team:'Team Beta',site:'Warehouse B',priority:'medium',status:'scheduled'},
+  {id:'#GWM-2039',title:'Plumbing Repair',team:'Team Delta',site:'Depot West',priority:'low',status:'completed'},
+  {id:'#GWM-2047',title:'Generator Service',team:'Team Delta',site:'Site Beta',priority:'high',status:'upcoming'},
+];
+const INCIDENTS=[
+  {id:'#INC-003',title:'Equipment Failure',sub:'Forklift hydraulic failure — Warehouse B',reporter:'Mike Chen',time:'2h ago',severity:'critical'},
+  {id:'#INC-008',title:'Near Miss',sub:'Slippery floor near loading bay',reporter:'Tom Walker',time:'5h ago',severity:'medium'},
+  {id:'#INC-012',title:'PPE Report',sub:'Missing hard hats in storage room 3',reporter:'Sarah Rashid',time:'1d ago',severity:'low'},
+];
+const TRAINING=[
+  {id:1,title:'Site Safety Induction — 2026',cat:'Safety',catColor:'#00e5a0',dur:'24 min',progress:100,bg:'#0d1a0d'},
+  {id:2,title:'PPE Usage & Maintenance',cat:'Operations',catColor:'#f5c842',dur:'18 min',progress:68,bg:'#1a1a0d'},
+  {id:3,title:'Forklift Operation Certification',cat:'Operations',catColor:'#00d4ff',dur:'42 min',progress:30,bg:'#0a1020'},
+  {id:4,title:'GDPR & Data Protection',cat:'Compliance',catColor:'#a855f7',dur:'31 min',progress:0,bg:'#150d1f'},
+  {id:5,title:'Fire Evacuation & Emergency',cat:'Safety',catColor:'#ff4d6a',dur:'15 min',progress:100,bg:'#1a0d0d'},
+  {id:6,title:'Manual Handling & Ergonomics',cat:'Health',catColor:'#00e5a0',dur:'20 min',progress:0,bg:'#0d150d'},
+];
+const ATTENDANCE=[
+  {initials:'JD',name:'James Donaldson',role:'Site Supervisor',status:'in',time:'08:02',color:'#f5c842'},
+  {initials:'SR',name:'Sarah Rashid',role:'HR Manager',status:'in',time:'08:45',color:'#a855f7'},
+  {initials:'MC',name:'Mike Chen',role:'Field Tech',status:'late',time:'09:18',color:'#00d4ff'},
+  {initials:'PO',name:'Priya Okafor',role:'Technician',status:'out',time:'—',color:'#ff4d6a'},
+  {initials:'TW',name:'Tom Walker',role:'Driver',status:'in',time:'07:55',color:'#00e5a0'},
+];
+const TIMELINE=[
+  {time:'09:15 AM',title:'Shift started — Site A',sub:'14 employees clocked in',color:'#f5c842'},
+  {time:'09:28 AM',title:'Incident reported',sub:'Equipment fault — Warehouse B',color:'#00d4ff'},
+  {time:'09:45 AM',title:'New job assigned',sub:'Job #GWM-2047 to Team Delta',color:'#a855f7'},
+  {time:'10:02 AM',title:'Training completed',sub:'Safety Module — 8 employees',color:'#00e5a0'},
+  {time:'10:30 AM',title:'Payroll approved',sub:'April batch — £47,820',color:'#f5c842'},
+];
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let clockedIn=false,clockInTs=null,clockTimer=null,empFilter='All';
+
+// ── TOAST ────────────────────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2600)}
+
+// ── SIDEBAR TOGGLE (MOBILE) ───────────────────────────────────────────────────
+function toggleSidebar(){
+  const sb=document.querySelector('.sidebar');
+  const ov=document.getElementById('sidebar-overlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('open');
+}
+function closeSidebar(){
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
+
+// ── LOGIN ────────────────────────────────────────────────────────────────────
+function setRole(el,r){document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active')}
+function doLogin(){document.getElementById('login-view').style.display='none';document.getElementById('app-view').style.display='flex';initAll()}
+function doLogout(){document.getElementById('app-view').style.display='none';document.getElementById('login-view').style.display='flex';clearInterval(clockTimer)}
+
+// ── NAVIGATION ───────────────────────────────────────────────────────────────
+const TITLES={dashboard:'Dashboard',schedule:'Schedule',clockin:'Clock In / Out',jobs:'Jobs',payroll:'Payroll',incidents:'Incidents',training:'Training',employees:'Employees',analytics:'Analytics',profile:'My Profile'};
+function goto(el){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  const sc=el.dataset.screen;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const scEl=document.getElementById('screen-'+sc);
+  if(scEl){scEl.classList.remove('fade-up');void scEl.offsetWidth;scEl.classList.add('active','fade-up')}
+  document.getElementById('page-title').textContent=TITLES[sc]||sc;
+  closeSidebar();
+}
+
+// ── LIVE CLOCK ───────────────────────────────────────────────────────────────
+function startClock(){
+  const tick=()=>{
+    const now=new Date();
+    document.getElementById('live-clock').textContent=now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    document.getElementById('live-date').textContent=now.toLocaleDateString([],{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    if(clockedIn&&clockInTs){const m=Math.floor((Date.now()-clockInTs)/60000);document.getElementById('today-hours').textContent=Math.floor(m/60)+'h '+m%60+'m'}
+  };
+  tick();setInterval(tick,1000);
+}
+
+// ── CLOCK IN/OUT ─────────────────────────────────────────────────────────────
+function toggleClock(){
+  const btn=document.getElementById('clock-btn');
+  const lbl=document.getElementById('clock-label');
+  const evs=document.getElementById('clock-events');
+  const now=new Date();
+  const tStr=now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  if(!clockedIn){
+    clockedIn=true;clockInTs=Date.now();
+    btn.className='clock-btn in-state';
+    lbl.style.color='var(--red)';lbl.textContent='CLOCK OUT';
+    const div=document.createElement('div');
+    div.style.cssText='display:flex;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)';
+    div.innerHTML=`<div style="width:9px;height:9px;background:var(--green);border-radius:50%;margin-top:4px;flex-shrink:0"></div><div><div class="text-dim text-xs">${tStr}</div><div style="font-size:13px;font-weight:600;color:var(--text)">Clocked In</div><div class="text-muted text-xs">Site Alpha · GPS: ✓</div></div>`;
+    evs.prepend(div);
+    toast('✅ Clocked in at '+tStr);
+  }else{
+    const m=Math.floor((Date.now()-clockInTs)/60000);
+    clockedIn=false;clockInTs=null;
+    btn.className='clock-btn out-state pulse';
+    lbl.style.color='var(--green)';lbl.textContent='CLOCK IN';
+    document.getElementById('today-hours').textContent='0h 0m';
+    const div=document.createElement('div');
+    div.style.cssText='display:flex;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)';
+    div.innerHTML=`<div style="width:9px;height:9px;background:var(--red);border-radius:50%;margin-top:4px;flex-shrink:0"></div><div><div class="text-dim text-xs">${tStr}</div><div style="font-size:13px;font-weight:600;color:var(--text)">Clocked Out</div><div class="text-muted text-xs">${Math.floor(m/60)}h ${m%60}m worked</div></div>`;
+    evs.prepend(div);
+    toast('✅ Clocked out — '+Math.floor(m/60)+'h '+m%60+'m logged');
+  }
+}
+
+// ── MAP ──────────────────────────────────────────────────────────────────────
+function buildMap(){
+  const m=document.getElementById('map-box');
+  let html='';
+  for(let i=1;i<7;i++){html+=`<div class="map-grid-h" style="top:${i*14}%"></div>`;html+=`<div class="map-grid-v" style="left:${i*14}%"></div>`}
+  html+=`<div class="map-pin-ring" style="width:60px;height:60px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>`;
+  html+=`<div class="map-pin-ring" style="width:40px;height:40px;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.5"></div>`;
+  html+=`<div class="map-pin-dot" style="top:50%;left:50%;transform:translate(-50%,-50%)"></div>`;
+  m.innerHTML=html;
+}
+
+// ── CALENDAR ────────────────────────────────────────────────────────────────
+function buildCal(){
+  const g=document.getElementById('cal-grid');
+  const cells=[
+    {day:19,shifts:[]},{day:20,shifts:['morning','evening'],today:true},
+    {day:21,shifts:['morning']},{day:22,shifts:['evening','night']},
+    {day:23,shifts:['morning']},{day:24,shifts:['morning','evening']},{day:25,shifts:[]},
+  ];
+  const pillMap={morning:`<span class="pill-morning">Morning 6AM</span>`,evening:`<span class="pill-evening">Evening 2PM</span>`,night:`<span class="pill-night">Night 10PM</span>`};
+  g.innerHTML=cells.map(c=>`
+    <div onclick="toast('📅 Day ${c.day} selected')" style="min-height:80px;background:var(--surface);border:1px solid ${c.today?'rgba(245,200,66,.35)':c.shifts.length?'rgba(0,212,255,.15)':'var(--border)'};border-radius:9px;padding:8px;cursor:pointer;transition:.15s;${c.today?'background:rgba(245,200,66,.04)':''}">
+      <div style="font-size:12px;font-weight:700;color:${c.today?'var(--gold)':'var(--text)'};margin-bottom:5px">${c.day}</div>
+      <div style="display:flex;flex-direction:column;gap:3px">${c.shifts.map(s=>pillMap[s]).join('')}</div>
+    </div>`).join('');
+}
+
+// ── RENDER HELPERS ───────────────────────────────────────────────────────────
+const statusBadge=s=>{const m={active:'badge-green',in:'badge-green',completed:'badge-green',inprogress:'badge-green',upcoming:'badge-amber',scheduled:'badge-amber',late:'badge-amber',out:'badge-red',offduty:'badge-red',leave:'badge-red',parttime:'badge-amber'};const l={active:'Active',in:'Clocked In',completed:'Completed',inprogress:'In Progress',upcoming:'Upcoming',scheduled:'Scheduled',late:'Late',out:'Absent',offduty:'Off Duty',leave:'On Leave',parttime:'Part-time'};return`<span class="badge ${m[s]||'badge-amber'}">${l[s]||s}</span>`};
+const priBadge=p=>{const m={high:'badge-red',medium:'badge-amber',low:'badge-green'};return`<span class="badge ${m[p]}">${p.charAt(0).toUpperCase()+p.slice(1)}</span>`};
+const shiftPill=t=>{const m={morning:'pill-morning',evening:'pill-evening',night:'pill-night'};return`<span class="${m[t]||'pill-morning'}">${t.charAt(0).toUpperCase()+t.slice(1)}</span>`};
+const avatarHTML=(initials,color,size=32)=>`<div class="avatar" style="width:${size}px;height:${size}px;background:${color};font-size:${size*.35}px">${initials}</div>`;
+
+// ── ATTENDANCE LIST ───────────────────────────────────────────────────────────
+function buildAttendance(){
+  const el=document.getElementById('att-list');
+  el.innerHTML=ATTENDANCE.map((a,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;${i<ATTENDANCE.length-1?'border-bottom:1px solid var(--border)':''}">
+      ${avatarHTML(a.initials,a.color,34)}
+      <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">${a.name}</div><div class="text-dim text-xs">${a.role}</div></div>
+      ${statusBadge(a.status)}
+      <span class="text-dim text-xs" style="margin-left:6px">${a.time}</span>
+    </div>`).join('');
+}
+
+// ── TIMELINE ─────────────────────────────────────────────────────────────────
+function buildTimeline(){
+  const el=document.getElementById('timeline-list');
+  el.innerHTML=TIMELINE.map((t,i)=>`
+    <div class="tl-item">
+      <div class="tl-dot-col">
+        <div class="tl-dot" style="background:${t.color}"></div>
+        ${i<TIMELINE.length-1?'<div class="tl-line"></div>':''}
+      </div>
+      <div style="padding-bottom:${i<TIMELINE.length-1?'16px':'0'}">
+        <div class="tl-time">${t.time}</div>
+        <div class="tl-title">${t.title}</div>
+        <div class="tl-sub">${t.sub}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── SHIFTS TABLE ────────────────────────────────────────────────────────────
+function buildShiftsTable(){
+  const el=document.getElementById('shifts-table');
+  el.innerHTML=SHIFTS.map(s=>`
+    <tr onclick="toast('📋 ${s.employee} — ${s.time}')">
+      <td><div style="display:flex;align-items:center;gap:10px">${avatarHTML(s.initials,s.color,30)}<div><div class="emp-name">${s.employee}</div><div class="text-dim text-xs">${s.empId}</div></div></div></td>
+      <td>${shiftPill(s.type)}</td>
+      <td><div style="font-size:12px;color:var(--text2)">${s.time}</div></td>
+      <td><span style="font-size:12px;color:var(--cyan)">${s.location}</span></td>
+      <td>${statusBadge(s.status)}</td>
+    </tr>`).join('');
+}
+
+// ── JOBS TABLE ────────────────────────────────────────────────────────────────
+function buildJobsTable(){
+  const el=document.getElementById('jobs-table');
+  el.innerHTML=JOBS.map(j=>`
+    <tr onclick="toast('🔧 ${j.id} — ${j.title}')">
+      <td><div class="emp-name">${j.title}</div><div class="text-dim text-xs">${j.id}</div></td>
+      <td><span style="font-size:12px;color:var(--text2)">${j.team}</span></td>
+      <td><span style="font-size:12px;color:var(--cyan)">${j.site}</span></td>
+      <td>${priBadge(j.priority)}</td>
+      <td>${statusBadge(j.status)}</td>
+      <td><button class="btn-outline btn-sm" onclick="event.stopPropagation();toast('✅ ${j.id} marked complete')">Mark Done</button></td>
+    </tr>`).join('');
+}
+
+// ── INCIDENTS ─────────────────────────────────────────────────────────────────
+function buildIncidents(){
+  const el=document.getElementById('incidents-list');
+  const sevMap={critical:{border:'var(--red)',bg:'rgba(255,77,106,.1)',label:'CRITICAL',color:'var(--red)'},medium:{border:'var(--amber)',bg:'rgba(255,149,0,.1)',label:'MEDIUM',color:'var(--amber)'},low:{border:'var(--green)',bg:'rgba(0,229,160,.1)',label:'LOW',color:'var(--green)'}};
+  el.innerHTML=INCIDENTS.map((inc,i)=>{const c=sevMap[inc.severity];return`
+    <div onclick="toast('⚠️ ${inc.id} — ${c.label}')" style="padding-left:12px;border-left:3px solid ${c.border};cursor:pointer;margin-bottom:${i<INCIDENTS.length-1?'14px':'0'}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:13.5px;font-weight:700;color:var(--text)">${inc.id} — ${inc.title}</span>
+        <span class="badge" style="background:${c.bg};color:${c.color}">${c.label}</span>
+      </div>
+      <div class="text-muted text-sm mb-4">${inc.sub}</div>
+      <div class="text-dim text-xs">Reported by ${inc.reporter} · ${inc.time}</div>
+    </div>`}).join('');
+}
+
+// ── TRAINING ──────────────────────────────────────────────────────────────────
+let trainFilter='All';
+function filterTraining(el,f){
+  trainFilter=f;
+  document.querySelectorAll('#train-filters .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  buildTraining();
+}
+function buildTraining(){
+  const el=document.getElementById('training-grid');
+  const data=trainFilter==='All'?TRAINING:TRAINING.filter(v=>v.cat.toLowerCase().includes(trainFilter.toLowerCase()));
+  el.innerHTML=data.map(v=>`
+    <div class="train-card" onclick="toast('▶ Playing: ${v.title}')">
+      <div class="train-thumb" style="background:${v.bg}">
+        <div class="train-play">▶</div>
+        <div class="train-step">Step ${v.id}</div>
+      </div>
+      <div class="train-body">
+        <div class="train-cat" style="color:${v.catColor}">${v.cat}</div>
+        <div class="train-title">${v.title}</div>
+        <div class="train-meta">
+          <span class="train-dur">⏱ ${v.dur}</span>
+          <span style="font-size:10px;font-weight:700;color:${v.progress===100?'var(--green)':v.progress>0?'var(--gold)':'var(--text3)'}">${v.progress===100?'Completed ✓':v.progress>0?v.progress+'% done':'Not started'}</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill" style="width:${v.progress}%;background:${v.catColor}"></div></div>
+      </div>
+    </div>`).join('');
+}
+
+// ── EMPLOYEES ─────────────────────────────────────────────────────────────────
+function setEmpFilter(el,f){
+  empFilter=f;
+  document.querySelectorAll('#emp-filters .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  buildEmployees();
+}
+function filterEmps(q){buildEmployees(q)}
+function buildEmployees(q=''){
+  const el=document.getElementById('emp-list');
+  const search=(q||document.getElementById('emp-search')?.value||'').toLowerCase();
+  const filtered=EMPLOYEES.filter(e=>{
+    const ms=e.name.toLowerCase().includes(search)||e.role.toLowerCase().includes(search);
+    const mf=empFilter==='All'||(empFilter==='Active'&&e.status==='active')||(empFilter==='On Leave'&&e.status==='leave')||(empFilter==='Part-time'&&e.status==='parttime');
+    return ms&&mf;
+  });
+  el.innerHTML=filtered.map(emp=>`
+    <div class="card mb-8">
+      <div onclick="toggleEmp('${emp.id}')" style="display:flex;align-items:center;gap:12px;cursor:pointer">
+        ${avatarHTML(emp.initials,emp.color,44)}
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:700;color:var(--text)">${emp.name}</div>
+          <div class="text-muted text-sm">${emp.role}</div>
+          <div class="text-dim text-xs">${emp.id}</div>
+        </div>
+        <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:7px">
+          ${statusBadge(emp.status)}
+          <span style="font-size:12px;color:var(--gold);font-weight:600">${emp.rate}/h</span>
+        </div>
+      </div>
+      <div class="emp-expand" id="expand-${emp.id.replace('#','')}">
+        <div class="emp-detail-grid">
+          <div class="emp-detail-item"><div class="d-label">Department</div><div class="d-val">${emp.dept}</div></div>
+          <div class="emp-detail-item"><div class="d-label">Hours/Week</div><div class="d-val" style="color:var(--cyan)">${emp.hours}</div></div>
+          <div class="emp-detail-item"><div class="d-label">Hourly Rate</div><div class="d-val" style="color:var(--gold)">${emp.rate}</div></div>
+        </div>
+        <div class="emp-actions">
+          <button class="emp-action-btn" onclick="toast('📅 Viewing ${emp.name} schedule')">Schedule</button>
+          <button class="emp-action-btn" onclick="toast('💰 Viewing ${emp.name} payroll')">Payroll</button>
+          <button class="emp-action-btn danger" onclick="toast('🚫 ${emp.name} deactivated')">Remove</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function toggleEmp(id){const el=document.getElementById('expand-'+id.replace('#',''));if(el)el.classList.toggle('open')}
+
+// ── ANALYTICS EXTRAS ──────────────────────────────────────────────────────────
+function buildTrainCompletion(){
+  const el=document.getElementById('train-completion');
+  const data=[{l:'Site Safety',v:94,c:'var(--green)'},{l:'PPE Usage',v:68,c:'var(--gold)'},{l:'Forklift',v:71,c:'var(--gold)'},{l:'GDPR',v:42,c:'var(--red)'},{l:'Fire Evac',v:100,c:'var(--green)'},{l:'Handling',v:38,c:'var(--red)'}];
+  el.innerHTML=data.map(d=>`
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:12px;color:var(--text2)">${d.l}</span>
+        <span style="font-size:12px;font-weight:700;color:${d.c}">${d.v}%</span>
+      </div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:${d.v}%;background:${d.c}"></div></div>
+    </div>`).join('');
+}
+
+// ── CLOCK EVENTS (initial) ─────────────────────────────────────────────────
+function buildClockEvents(){
+  const el=document.getElementById('clock-events');
+  el.innerHTML=`
+    <div style="display:flex;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="width:9px;height:9px;background:var(--green);border-radius:50%;margin-top:4px;flex-shrink:0"></div>
+      <div><div class="text-dim text-xs">07:55 AM</div><div style="font-size:13px;font-weight:600;color:var(--text)">Clocked In</div><div class="text-muted text-xs">Site Alpha · GPS: ✓</div></div>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:12px;padding:8px 0;opacity:.4">
+      <div style="width:9px;height:9px;background:var(--border);border-radius:50%;margin-top:4px;flex-shrink:0"></div>
+      <div><div class="text-dim text-xs">— : — PM</div><div style="font-size:13px;font-weight:600;color:var(--text3)">Clock Out pending</div></div>
+    </div>`;
+}
+
+// ── SEVERITY BUTTONS ─────────────────────────────────────────────────────────
+function setSev(el,s){
+  document.querySelectorAll('.sev-btn').forEach(b=>{b.className='sev-btn'});
+  el.classList.add('active-'+s);
+  toast('Severity set to: '+s.toUpperCase());
+}
+
+// ── PERIOD TABS ───────────────────────────────────────────────────────────────
+function setPeriod(el){
+  document.querySelectorAll('#period-btns .period-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  toast('📊 Viewing: '+el.textContent+' analytics');
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+function initAll(){
+  startClock();
+  buildMap();
+  buildCal();
+  buildAttendance();
+  buildTimeline();
+  buildShiftsTable();
+  buildJobsTable();
+  buildIncidents();
+  buildTraining();
+  buildEmployees();
+  buildTrainCompletion();
+  buildClockEvents();
+  // Close sidebar on Escape key
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSidebar()});
+  // Close sidebar when window resizes to desktop
+  window.addEventListener('resize',()=>{if(window.innerWidth>768)closeSidebar()});
+}
+</script>
+</body>
+</html>
